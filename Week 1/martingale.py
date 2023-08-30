@@ -26,17 +26,17 @@ GT User ID: tb34 (replace with your User ID)
 GT ID: 900897987 (replace with your GT ID)  		  	   		  		 		  		  		    	 		 		   		 		  
 """  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
-import numpy as np  		  	   		  		 		  		  		    	 		 		   		 		  
+import numpy as np
+import matplotlib.pyplot as plt 
+		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-def author():  		  	   		  		 		  		  		    	 		 		   		 		  
+def author():  		  	   		  		 		  		  		    	 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
     :return: The GT username of the student  		  	   		  		 		  		  		    	 		 		   		 		  
     :rtype: str  		  	   		  		 		  		  		    	 		 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
-    return "tb34"  # replace tb34 with your Georgia Tech username.  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
+    return "tb34"  # replace tb34 with your Georgia Tech username.  		  	   		  		 		  		  		    	 		 		   		 		 
+  		  	   		  		 		  		  		    	 		 		   		 		     		  		 		  		  		    	 		 		   		 		  
 def gtid():  		  	   		  		 		  		  		    	 		 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
     :return: The GT ID of the student  		  	   		  		 		  		  		    	 		 		   		 		  
@@ -58,7 +58,23 @@ def get_spin_result(win_prob):
     if np.random.random() <= win_prob:  		  	   		  		 		  		  		    	 		 		   		 		  
         result = True  		  	   		  		 		  		  		    	 		 		   		 		  
     return result  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
+
+
+def simulate_episode(win_prob):
+    winnings = [0]  # Initialize with 0 winnings
+    episode_winnings = 0
+    episode_spins = 1000
+
+    for _ in range(episode_spins):
+        if get_spin_result(win_prob):
+            episode_winnings += 1
+        else:
+            episode_winnings -= 1
+        winnings.append(episode_winnings)
+
+    return winnings
+
+
   		  	   		  		 		  		  		    	 		 		   		 		  
 def test_code():  		  	   		  		 		  		  		    	 		 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
@@ -67,8 +83,24 @@ def test_code():
     win_prob = 0.60  # set appropriately to the probability of a win  		  	   		  		 		  		  		    	 		 		   		 		  
     np.random.seed(gtid())  # do this only once  		  	   		  		 		  		  		    	 		 		   		 		  
     print(get_spin_result(win_prob))  # test the roulette spin  		  	   		  		 		  		  		    	 		 		   		 		  
-    # add your code here to implement the experiments  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
+    # add your code here to implement the experiments
+    plt.figure(figsize=(10, 6))
+    
+    for _ in range(10):
+        winnings = simulate_episode(win_prob)
+        plt.plot(winnings, label=f'Episode {_ + 1}')
+
+    plt.xlim(0, 300)
+    plt.ylim(-256, 100)
+    plt.xlabel('Spin Number')
+    plt.ylabel('Winnings')
+    plt.title('Simulation of 10 Episodes using Martingale Strategy')
+    plt.legend()
+    plt.grid()
+    plt.show()  	   		  		 		  		  		    	 		 		   		 		  
+
+
   		  	   		  		 		  		  		    	 		 		   		 		  
 if __name__ == "__main__":  		  	   		  		 		  		  		    	 		 		   		 		  
-    test_code()  		  	   		  		 		  		  		    	 		 		   		 		  
+    test_code()  		  	   
+
