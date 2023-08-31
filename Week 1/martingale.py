@@ -35,7 +35,7 @@ def author():
     :return: The GT username of the student  		  	   		  		 		  		  		    	 		 		   		 		  
     :rtype: str  		  	   		  		 		  		  		    	 		 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
-    return "tb34"  # replace tb34 with your Georgia Tech username.  		  	   		  		 		  		  		    	 		 		   		 		 
+    return "maxmatkovski3"  # replace tb34 with your Georgia Tech username.  		  	   		  		 		  		  		    	 		 		   		 		 
   		  	   		  		 		  		  		    	 		 		   		 		     		  		 		  		  		    	 		 		   		 		  
 def gtid():  		  	   		  		 		  		  		    	 		 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
@@ -54,53 +54,72 @@ def get_spin_result(win_prob):
     :return: The result of the spin.  		  	   		  		 		  		  		    	 		 		   		 		  
     :rtype: bool  		  	   		  		 		  		  		    	 		 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
-    result = False  		  	   		  		 		  		  		    	 		 		   		 		  
-    if np.random.random() <= win_prob:  		  	   		  		 		  		  		    	 		 		   		 		  
+    result = False  		  	   		 		   		 		  
+    if np.random.random() <= win_prob:  		  	   		  				 		  
         result = True  		  	   		  		 		  		  		    	 		 		   		 		  
     return result  		  	   		  		 		  		  		    	 		 		   		 		  
-
-
-def simulate_episode(win_prob):
-    winnings = [0]  # Initialize with 0 winnings
+def simulate_episode(target_winnings=80, max_loss=-256, win_prob=18/38):
     episode_winnings = 0
-    episode_spins = 1000
+    bankroll = 256  # Initial bankroll
+    num_bets = 0
+    winnings_over_time = []  # Initialize an empty list to keep track of winnings over time
 
-    for _ in range(episode_spins):
-        if get_spin_result(win_prob):
-            episode_winnings += 1
-        else:
-            episode_winnings -= 1
-        winnings.append(episode_winnings)
+    while target_winnings > episode_winnings > max_loss and num_bets < 1000:
+        won = False
+        bet_amount = 1
+        while not won and num_bets < 1000:
+            # Make sure not to bet more than what's left in the bankroll
+            bet_amount = min(bet_amount, bankroll)
+            won = get_spin_result(win_prob)
+            if won:
+                episode_winnings += bet_amount
+                bankroll += bet_amount
+            else:
+                episode_winnings -= bet_amount
+                bankroll -= bet_amount
+                bet_amount *= 2  # Double the bet for the next round
+            num_bets += 1
 
-    return winnings
+            # Append the current winnings to the list
+            winnings_over_time.append(episode_winnings)
 
+    # Filling the data forward with the last value
+    winnings_over_time += [episode_winnings] * (1000 - len(winnings_over_time))
 
-  		  	   		  		 		  		  		    	 		 		   		 		  
-def test_code():  		  	   		  		 		  		  		    	 		 		   		 		  
-    """  		  	   		  		 		  		  		    	 		 		   		 		  
-    Method to test your code  		  	   		  		 		  		  		    	 		 		   		 		  
-    """  		  	   		  		 		  		  		    	 		 		   		 		  
-    win_prob = 0.60  # set appropriately to the probability of a win  		  	   		  		 		  		  		    	 		 		   		 		  
-    np.random.seed(gtid())  # do this only once  		  	   		  		 		  		  		    	 		 		   		 		  
-    print(get_spin_result(win_prob))  # test the roulette spin  		  	   		  		 		  		  		    	 		 		   		 		  
-    # add your code here to implement the experiments
+    return winnings_over_time  # Return the winnings over time as a list
+
+def test_code():
+    win_prob = 18/38  # American roulette wheel
+    np.random.seed(42)
+    num_episodes = 1000
+    max_spins = 1000  # Maximum number of spins per episode
+
+    # Initialize a 2D array to store the winnings for each spin for each episode
+    all_winnings = np.zeros((num_episodes, max_spins))
+
+    for i in range(num_episodes):
+        winnings = simulate_episode(target_winnings=80, max_loss=-256, win_prob=win_prob)
+        all_winnings[i, :len(winnings)] = winnings
+
+    # Calculate the median and standard deviation of winnings at each spin
+    median_winnings = np.median(all_winnings, axis=0)
+    std_winnings = np.std(all_winnings, axis=0)
+
+    # Plotting for median
     plt.figure(figsize=(10, 6))
-    
-    for _ in range(10):
-        winnings = simulate_episode(win_prob)
-        plt.plot(winnings, label=f'Episode {_ + 1}')
+    plt.plot(median_winnings, label="Median Winnings")
+    plt.plot(median_winnings + std_winnings, label="Median + 1 Std Dev", linestyle="--")
+    plt.plot(median_winnings - std_winnings, label="Median - 1 Std Dev", linestyle="--")
 
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
     plt.xlabel('Spin Number')
     plt.ylabel('Winnings')
-    plt.title('Simulation of 10 Episodes using Martingale Strategy')
+    plt.title('Figure 5: Median and Std Dev of Winnings Over 1000 Episodes with $256 Bankroll')
     plt.legend()
-    plt.grid()
-    plt.show()  	   		  		 		  		  		    	 		 		   		 		  
+    plt.grid(True)
+    plt.show()
 
-
-  		  	   		  		 		  		  		    	 		 		   		 		  
-if __name__ == "__main__":  		  	   		  		 		  		  		    	 		 		   		 		  
-    test_code()  		  	   
-
+if __name__ == "__main__":
+    test_code()
+    
