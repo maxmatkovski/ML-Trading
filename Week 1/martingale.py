@@ -122,7 +122,7 @@ def test_code_fig1():
         plt.plot(winnings[:301], label=f"Episode {i+1}")
     plt.xlabel("Bets")
     plt.ylabel("Winnings")
-    plt.title("Winnings Over 10 Episodes")
+    plt.title("Figure 1: Winnings Over 10 Episodes (Unlimited Bankroll)")
     plt.xlim(0, 300) 
     plt.ylim(-256, 100) 
     plt.legend(loc="upper left") 
@@ -153,7 +153,7 @@ def test_code_fig2():
     plt.plot(mean_winnings[:301] - std_winnings[:301], label="Mean - 1 Std Dev", linestyle="--")
     plt.xlabel("Bets")
     plt.ylabel("Winnings")
-    plt.title("Mean Winnings Over 1000 Episodes")
+    plt.title("Figure 2: Mean Winnings Over 1000 Episodes (Unlimited Bankroll)")
     plt.xlim(0, 300) 
     plt.ylim(-256, 100) 
     plt.legend(loc="upper left") 
@@ -183,7 +183,7 @@ def test_code_fig3():
     plt.plot(median_winnings[:301] - std_winnings[:301], label="Median - 1 Std Dev", linestyle="--")
     plt.xlabel("Bets")
     plt.ylabel("Winnings")
-    plt.title("Median Winnings Over 1000 Episodes")
+    plt.title("Figure 3: Median Winnings Over 1000 Episodes (Unlimited Bankroll)")
     plt.xlim(0, 300) 
     plt.ylim(-256, 100) 
     plt.legend(loc="upper left") 
@@ -213,7 +213,7 @@ def test_code_fig4():
     plt.plot(mean_winnings - std_winnings, label='Mean - 1 std', linestyle='--')
     plt.xlabel('Spins')
     plt.ylabel('Winnings')
-    plt.title('Figure 4: Mean Winnings Over Time (Limited Bankroll)')
+    plt.title('Figure 4: Mean Winnings Over Time (Limited Bankroll of $256)')
     plt.legend()
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
@@ -243,33 +243,123 @@ def test_code_fig5():
     plt.plot(median_winnings - std_winnings, label='Median - 1 std', linestyle='--')
     plt.xlabel('Spins')
     plt.ylabel('Winnings')
-    plt.title('Figure 5: Median Winnings Over Time (Limited Bankroll)')
+    plt.title('Figure 5: Median Winnings Over Time (Limited Bankroll of $256)')
     plt.legend()
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
     plt.grid(True)
     plt.show()
 
+def question_1 ():
+    # what is the probability of reaching $80 in experiment 1 ?(unbound loss tolerance)
+    num_episodes = 10000 
+    success_count = 0 
+    for _ in range(num_episodes):
+        episode_winnings = simulate_episode_unlimited(target_winnings=80) 
+        if max(episode_winnings) >= 80: 
+            success_count += 1
+
+    # total episodes that reached 80 over total simulated
+    estimated_probability = success_count / num_episodes
+    print(f"The estimated probability of winning $80 within 1000 sequential bets is {estimated_probability:.4f}")
+
+
+# EXPECTED VALUE CALCULATION
+def expected_value(target_winnings=None, max_loss=None, win_prob=18/38):
+    episode_winnings = 0
+    num_bets = 0
+    winnings_over_time = np.zeros(1000)  
+    while num_bets < 1000:
+        won = False
+        bet_amount = 1
+        while not won and num_bets < 1000:
+            won = get_spin_result(win_prob)
+            if won:
+                episode_winnings += bet_amount
+            else:
+                episode_winnings -= bet_amount
+                bet_amount *= 2  # Doubling the bet amount
+            
+            winnings_over_time[num_bets] = episode_winnings
+            num_bets += 1
+    return winnings_over_time[:num_bets]
+
+
+def question2():
+    final_winnings = []
+    for i in range(1000):
+        winnings_over_time = expected_value()
+        final_winnings.append(winnings_over_time[-1]) 
+
+    mean_winnings = np.mean(final_winnings)
+    print(f"The expected value of winnings after 1000 sequential bets is approximately ${mean_winnings:.5f}.")
+
+def limited_expected_value(target_winnings=None, max_loss=-256, win_prob=18/38):
+    episode_winnings = 0
+    num_bets = 0
+    winnings_over_time = np.zeros(1000)
+    while num_bets < 1000:
+        won = False
+        bet_amount = 1
+        while not won and num_bets < 1000:
+            # Check for maximum loss
+            if episode_winnings <= max_loss:
+                break
+            won = get_spin_result(win_prob)
+            if won:
+                episode_winnings += bet_amount
+            else:
+                episode_winnings -= bet_amount
+                bet_amount *= 2  # Doubling the bet amount
+
+            winnings_over_time[num_bets] = episode_winnings
+            num_bets += 1
+
+        # Exit outer loop as well if maximum loss is reached
+        if episode_winnings <= max_loss:
+            break
+    return winnings_over_time[:num_bets]
+
+def question4():
+    # what is the probability of reaching $80 in experiment 2 ?
+    # (bound loss tolerance)
+    num_episodes = 10000 
+    success_count = 0 
+    for _ in range(num_episodes):
+        episode_winnings = simulate_episode_limited(target_winnings=80) 
+        if max(episode_winnings) >= 80: 
+            success_count += 1
+
+    # total episodes that reached 80 over total simulated
+    estimated_probability = success_count / num_episodes
+    print(f"The estimated probability of winning $80 within 1000 sequential bets is {estimated_probability:.4f}")   
+
+
+def question5():
+    final_winnings = []
+    for i in range(1000):
+        winnings_over_time = limited_expected_value()
+        final_winnings.append(winnings_over_time[-1]) 
+
+    mean_winnings = np.mean(final_winnings)
+    print(f"Limited expected value of winnings after 1000 sequential bets is approximately ${mean_winnings:.5f}.")
+
 
 
 if __name__ == "__main__":
-
-# Figure 1
+    # figure generation
     test_code_fig1()
-
-# Figure 2
     test_code_fig2()
-
-# Figure 3
     test_code_fig3()
-
-# Figure 4
     test_code_fig4()
-
-# Figure 5
     test_code_fig5()
 
 
 
+    # questions
+    question_1()
+    question2()
 
+    question4()
+    question5()
 
