@@ -127,7 +127,10 @@ def test_code_fig1():
     plt.ylim(-256, 100) 
     plt.legend(loc="upper left") 
     plt.grid(True) 
+    plt.savefig('images/Figure_1')
+
     plt.show()
+
 
 #  CODE TO CREATE FIGURE 2
 def test_code_fig2():
@@ -158,6 +161,8 @@ def test_code_fig2():
     plt.ylim(-256, 100) 
     plt.legend(loc="upper left") 
     plt.grid(True)
+    plt.savefig('images/Figure_2')
+
     plt.show()
 
 def test_code_fig3():
@@ -188,6 +193,8 @@ def test_code_fig3():
     plt.ylim(-256, 100) 
     plt.legend(loc="upper left") 
     plt.grid(True) 
+    plt.savefig('images/Figure_3')
+
     plt.show()
     
 # FUNCTION TO CREATE FIGURE 4
@@ -218,6 +225,8 @@ def test_code_fig4():
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
     plt.grid(True)
+    plt.savefig('images/Figure_4')
+
     plt.show()
 
 def test_code_fig5():
@@ -248,6 +257,7 @@ def test_code_fig5():
     plt.xlim(0, 300)
     plt.ylim(-256, 100)
     plt.grid(True)
+    plt.savefig('images/Figure_5')
     plt.show()
 
 def question_1 ():
@@ -283,7 +293,6 @@ def expected_value(target_winnings=None, max_loss=None, win_prob=18/38):
             winnings_over_time[num_bets] = episode_winnings
             num_bets += 1
     return winnings_over_time[:num_bets]
-
 
 def question2():
     final_winnings = []
